@@ -14,7 +14,7 @@ can be easily created/edited using the free online diagram software `Flowchart M
 
 .. image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/FlowchartMaker.png?raw=true
    :align: center
-   :width: 400
+   :width: 500
    :alt: Flowchart Maker
    :target: https://app.diagrams.net
 
@@ -34,6 +34,8 @@ here how to `Create a template`_):
 |          |fancy1_landscape|           |          |fancy3_landscape|           |
 +---------------------------------------+---------------------------------------+
 |          |fancy2_landscape|           |          |fancy4_landscape|           |
++-------------------+-------------------+-------------------+-------------------+
+
 +-------------------+-------------------+-------------------+-------------------+
 | |fancy1_portrait| | |fancy2_portrait| | |fancy3_portrait| | |fancy4_portrait| |
 +-------------------+-------------------+-------------------+-------------------+
@@ -176,95 +178,95 @@ Step 6: save the template file
 .. --- Examples ---------------------------------------------------------------
 
 .. |fancy1_landscape| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy1_landscape.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy1_landscape
 
 .. |fancy2_landscape| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy2_landscape.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy2_landscape
 
 .. |fancy3_landscape| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy3_landscape.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy3_landscape
 
 .. |fancy4_landscape| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy4_landscape.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy4_landscape
 
 .. |fancy1_portrait| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy1_portrait.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy1_portrait
 
 .. |fancy2_portrait| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy2_portrait.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy2_portrait
 
 .. |fancy3_portrait| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy3_portrait.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy3_portrait
 
 .. |fancy4_portrait| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/examples/fancy4_portrait.jpg?raw=true
-   :width: 60 %
+   :width: 90 %
    :align: middle
    :alt: fancy4_portrait
 
 .. --- Tuto -------------------------------------------------------------------
 
 .. |step1_1_create| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_1_create.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step1_1_create
 
 .. |step1_2_blank| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_2_blank.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step1_2_blank
 
 .. |step1_3_size| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_3_size.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step1_3_size
 
 .. |step2_1_rectangle| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_1_rectangle.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step2_1_rectangle
 
 .. |step2_2_rectangle_resize| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_2_rectangle_resize.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step2_2_rectangle_resize
 
 .. |step3_1_text| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_1_text.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step3_1_text
 
 .. |step3_2_text_resize| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_2_text_resize.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step3_2_text_resize
 
 .. |step4_1_property| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_1_property.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step4_1_property
 
 .. |step4_2_dpi| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_2_dpi.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step4_2_dpi
 
 .. |step5_1_new_template| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_1_new_template.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step5_1_new_template
 
 .. |step5_2_numbering| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step5_2_numbering
 
 .. |step6_1_xml| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_1_xml.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step6_1_xml
 
 .. |step6_2_export| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_2_export.png?raw=true
-   :width: 30 %
+   :width: 60 %
    :alt: step6_2_export
