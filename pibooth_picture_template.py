@@ -16,7 +16,7 @@ from pibooth import pictures
 from pibooth.pictures.factory import PilPictureFactory
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 
 @pibooth.hookimpl
