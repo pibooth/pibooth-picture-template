@@ -74,16 +74,15 @@ This file may contain several templates to define the picture layout for ``1`` /
 Step 1: create a new file
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step1_1_create|             Click on ``Create New Diagram``.
+===========  ==================================================================
+ |step1_1|   Click on ``Create New Diagram``.
 
- |step1_2_blank|              Choose a blank diagram. Modify the name of the diagram,
-                              it will be the name of the exported file.
-                              Click on ``Create``.
+ |step1_2|   Choose a blank diagram. Modify the name of the diagram, it will be
+             the name of the exported file. Click on ``Create``.
 
- |step1_3_size|               Select the appropriated paper size. A custom one can be
-                              defined in *inches*.
-============================  ===========================================================
+ |step1_3|   Select the appropriated paper size. A custom one can be defined in
+             *inches*.
+===========  ==================================================================
 
 .. note:: It could be easier to start from an existing file. Click on ``Open Existing Diagram``
           to load the default template file located in ``~/.config/pibooth/picture_template.xml``
@@ -92,64 +91,61 @@ Step 1: create a new file
 Step 2: placeholder for captures
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step2_1_rectangle|          Choose a rectangle to define a capture placeholder. Other
-                              shapes have no effect and will be considered as rectangles.
+===========  ==================================================================
+ |step2_1|   Choose a rectangle to define a capture placeholder. Other shapes
+             have no effect and will be considered as rectangles.
 
- |step2_2_rectangle_resize|   Resize the rectangle to fit the desired size. The rectangle
-                              can overflow the border of the page to make design effects.
-                              Up to 4 rectangles can be drawn.
-============================  ===========================================================
+ |step2_2|   Resize the rectangle to fit the desired size. The rectangle can
+             overflow the border of the page to make design effects. Up to 4
+             rectangles can be drawn.
+===========  ==================================================================
 
 Step 3: placeholder for texts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step3_1_text|               Choose a text box to represent a text placeholder.
+===========  ==================================================================
+ |step3_1|   Choose a text box to represent a text placeholder.
 
- |step3_2_text_resize|        Resize the text box to fit the desired size. Up to 2 text
-                              boxes can be drawn depending on the  `pibooth`_
-                              configuration.
-============================  ===========================================================
+ |step3_2|   Resize the text box to fit the desired size. Up to 2 text boxes
+             can be drawn depending on the  `pibooth`_ configuration.
+===========  ==================================================================
 
 Step 4: picture resolution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step4_1_property|           Extra properties can be set to the template. Click on the
-                              button ``Edit Data`` (close to the paper size settings).
-                              Type ``dpi`` in the entry box and click on ``Add Property``.
+===========  ==================================================================
+ |step4_1|   Extra properties can be set to the template. Click on the button
+             ``Edit Data`` (close to the paper size settings). Type ``dpi`` in
+             the entry box and click on ``Add Property``.
 
- |step4_2_dpi|                By default a resolution of ``600`` DPI is used. It means
-                              that the picture size will be 2400x3600 pixels for a
-                              resolution of 4x6 inches. Set it to the desired value and
-                              click on ``Apply``.
-============================  ===========================================================
+ |step4_2|   By default a resolution of ``600`` DPI is used. It means that the
+             picture size will be 2400x3600 pixels for a resolution of 4x6
+             inches. Set it to the desired value and click on ``Apply``.
+===========  ==================================================================
 
 Step 5: add new a template
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step5_1_new_template|       Once the template is created. A new one can be defined for
-                              an other captures number or other orientation. Click on
-                              ``+`` to add a new page.
+===========  ==================================================================
+ |step5_1|   Once the template is created. A new one can be defined for an
+             other captures number or other orientation. Click on ``+`` to add
+             a new page.
 
- |step5_2_numbering|          The captures and texts placeholders can be numbered to
-                              define the order of the caputres/texts.
-                              Colored shapes give a better overview of the layout but
-                              they are not rendered on the final picture.
-============================  ===========================================================
+ |step5_2|   The captures and texts placeholders can be numbered to define the
+             order of the captures/texts. Colored shapes give a better overview
+             of the layout but they are not rendered on the final picture.
+===========  ==================================================================
 
 Step 6: save the template file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-============================  ===========================================================
- |step6_1_xml|                Generate the XML file by clicking ``File``, ``Export as``,
-                              ``XML...``.
+===========  ==================================================================
+ |step6_1|   Generate the XML file by clicking ``File``, ``Export as``,
+             ``XML...``.
 
- |step6_2_export|             Click on ``Export`` (unselect ``Compressed`` if you want
-                              to edit the file manually later).
-============================  ===========================================================
+ |step6_2|   Click on ``Export`` (unselect ``Compressed`` if you want to edit
+             the file manually later).
+===========  ==================================================================
 
 .. note:: Instead of running `pibooth`_ each time you want to test the result of
           your template, use the command ``pibooth-regen``. It will regenerate
@@ -219,54 +215,54 @@ Step 6: save the template file
 
 .. --- Tuto -------------------------------------------------------------------
 
-.. |step1_1_create| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_1_create.png?raw=true
-   :width: 60 %
+.. |step1_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_1_create.png?raw=true
+   :width: 80 %
    :alt: step1_1_create
 
-.. |step1_2_blank| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_2_blank.png?raw=true
-   :width: 60 %
+.. |step1_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_2_blank.png?raw=true
+   :width: 80 %
    :alt: step1_2_blank
 
-.. |step1_3_size| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_3_size.png?raw=true
-   :width: 60 %
+.. |step1_3| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step1_3_size.png?raw=true
+   :width: 80 %
    :alt: step1_3_size
 
-.. |step2_1_rectangle| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_1_rectangle.png?raw=true
-   :width: 60 %
+.. |step2_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_1_rectangle.png?raw=true
+   :width: 80 %
    :alt: step2_1_rectangle
 
-.. |step2_2_rectangle_resize| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_2_rectangle_resize.png?raw=true
-   :width: 60 %
+.. |step2_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_2_rectangle_resize.png?raw=true
+   :width: 80 %
    :alt: step2_2_rectangle_resize
 
-.. |step3_1_text| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_1_text.png?raw=true
-   :width: 60 %
+.. |step3_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_1_text.png?raw=true
+   :width: 80 %
    :alt: step3_1_text
 
-.. |step3_2_text_resize| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_2_text_resize.png?raw=true
-   :width: 60 %
+.. |step3_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_2_text_resize.png?raw=true
+   :width: 80 %
    :alt: step3_2_text_resize
 
-.. |step4_1_property| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_1_property.png?raw=true
-   :width: 60 %
+.. |step4_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_1_property.png?raw=true
+   :width: 80 %
    :alt: step4_1_property
 
-.. |step4_2_dpi| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_2_dpi.png?raw=true
-   :width: 60 %
+.. |step4_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step4_2_dpi.png?raw=true
+   :width: 80 %
    :alt: step4_2_dpi
 
-.. |step5_1_new_template| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_1_new_template.png?raw=true
-   :width: 60 %
+.. |step5_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_1_new_template.png?raw=true
+   :width: 80 %
    :alt: step5_1_new_template
 
-.. |step5_2_numbering| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
-   :width: 60 %
+.. |step5_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
+   :width: 80 %
    :alt: step5_2_numbering
 
-.. |step6_1_xml| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_1_xml.png?raw=true
-   :width: 60 %
+.. |step6_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_1_xml.png?raw=true
+   :width: 80 %
    :alt: step6_1_xml
 
-.. |step6_2_export| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_2_export.png?raw=true
-   :width: 60 %
+.. |step6_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_2_export.png?raw=true
+   :width: 80 %
    :alt: step6_2_export
