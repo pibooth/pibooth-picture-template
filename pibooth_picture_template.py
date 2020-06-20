@@ -234,9 +234,10 @@ class TemplateParser(object):
 
     def get_best_orientation(self, captures):
         """Return the best orientation (PORTRAIT or LANDSCAPE), depending on the
-        resolution of the given captures.
+        orientation of the given captures and available templates.
 
-        It use the size of the first capture to determine the orientation.
+        It use the size of the first capture to determine the orientation (all captures
+        of a same sequence should have the same orientation).
 
         :param captures: list of captures to concatenate
         :type captures: list

@@ -62,6 +62,20 @@ configuration:
 
 .. note:: Edit the configuration by running the command ``pibooth --config``.
 
+Picture orientation
+-------------------
+
+A ``TemplateParserError`` is raised if the requested orientation for the selected
+captures number can not be found in the template file.
+
+If ``[PICTURE][orientation] = auto`` the best orientation is chosen following these
+rules:
+
+* find a template with the correct number of captures and placeholders with same orientation
+  than the captures.
+* find a template with the correct number of captures.
+* find a template with portrait orientation
+
 Create a template
 -----------------
 
@@ -69,7 +83,7 @@ The steps below will show how to create a basic template file from scratch using
 the `Flowchart Maker`_ application.
 
 This file may contain several templates to define the picture layout for ``1`` /
-``2`` / ``3`` / ``4`` captures and 2 orientations (``portrait`` and ``landscape``).
+``2`` / ``3`` / ``4`` captures and ``portrait`` / ``landscape`` orientations.
 
 Step 1: create a new file
 ^^^^^^^^^^^^^^^^^^^^^^^^^
