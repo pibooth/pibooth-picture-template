@@ -19,16 +19,10 @@ can be easily created/edited using the free online diagram software `Flowchart M
    :target: https://app.diagrams.net
 
 
-Default templates can be found on `GitHub <https://github.com/pibooth/pibooth-picture-template/tree/master/templates>`_:
-
-* `pibooth.xml <https://github.com/pibooth/pibooth-picture-template/blob/master/templates/pibooth.xml?raw=true>`_
-  : the default layout of the `pibooth`_ pictures factory
-* `fancy.xml <https://github.com/pibooth/pibooth-picture-template/blob/master/templates/fancy.xml?raw=true>`_
-  : the default layout installed by this plugin
-
-
-Below are examples of the pictures generated using the ``fancy.xml`` template (learn
-here how to `Create a template`_):
+A set of templates can be found on `GitHub <https://github.com/pibooth/pibooth-picture-template/tree/master/templates>`_.
+The `fancy.xml <https://github.com/pibooth/pibooth-picture-template/blob/master/templates/fancy.xml?raw=true>`_
+one is automatically installed by this plugin. Below are the pictures generated with this one
+(learn here how to `Create a template`_):
 
 +---------------------------------------+---------------------------------------+
 |          |fancy1_landscape|           |          |fancy3_landscape|           |
@@ -51,7 +45,7 @@ Configuration
 -------------
 
 Here below the extra configuration options that can be added in the `pibooth`_
-configuration:
+configuration (this option is automatically added at first startup after plugin installation):
 
 .. code-block:: ini
 
