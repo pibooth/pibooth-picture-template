@@ -20,9 +20,11 @@ can be easily created/edited using the free online diagram software `Flowchart M
 
 
 A set of templates can be found on `GitHub <https://github.com/pibooth/pibooth-picture-template/tree/master/templates>`_.
+
 The `fancy.xml <https://github.com/pibooth/pibooth-picture-template/blob/master/templates/fancy.xml?raw=true>`_
-one is automatically installed by this plugin. Below are the pictures generated with this one
-(learn here how to `Create a template`_):
+template is automatically installed by this plugin in ``~/.config/pibooth/picture_template.xml``.
+
+Below are the pictures generated with this one (learn here how to `Create a template`_):
 
 +---------------------------------------+---------------------------------------+
 |          |fancy1_landscape|           |          |fancy3_landscape|           |
@@ -44,8 +46,7 @@ Install
 Configuration
 -------------
 
-Here below the extra configuration options that can be added in the `pibooth`_
-configuration (this option is automatically added at first startup after plugin installation):
+Here below the extra configuration options that can be added in the `pibooth`_ configuration:
 
 .. code-block:: ini
 
@@ -94,7 +95,6 @@ Step 1: create a new file
 
 .. note:: It could be easier to start from an existing file. Click on ``Open Existing Diagram``
           to load the default template file located in ``~/.config/pibooth/picture_template.xml``
-          (**this file is generated at first** `pibooth`_  **startup**).
 
 Step 2: placeholder for captures
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
