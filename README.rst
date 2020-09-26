@@ -47,7 +47,7 @@ Configuration
 -------------
 
 Here below the new configuration options available in the `pibooth`_ configuration.
-**The keys and their default values are automatically added to your configuration after first ``pibooth`` restart.**
+**The keys and their default values are automatically added to your configuration after first** ``pibooth`` **restart.**
 
 .. code-block:: ini
 
