@@ -46,7 +46,8 @@ Install
 Configuration
 -------------
 
-Here below the extra configuration options that can be added in the `pibooth`_ configuration:
+Here below the new configuration options available in the `pibooth`_ configuration.
+**The keys and their default values are automatically added to your configuration after first ``pibooth`` restart.**
 
 .. code-block:: ini
 
@@ -54,7 +55,7 @@ Here below the extra configuration options that can be added in the `pibooth`_ c
 
     # Pictures template path, it should contain 8 pages (4 capture numbers and 2 orientations)
     template = picture_template.xml
-
+          
 .. note:: Edit the configuration by running the command ``pibooth --config``.
 
 Picture orientation
