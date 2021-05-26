@@ -55,7 +55,7 @@ Here below the new configuration options available in the `pibooth`_ configurati
 
     # Pictures template path, it should contain 8 pages (4 capture numbers and 2 orientations)
     template = picture_template.xml
-          
+
 .. note:: Edit the configuration by running the command ``pibooth --config``.
 
 Picture orientation
@@ -168,9 +168,9 @@ Step 6: save the template file
 
 .. _`Flowchart Maker`: https://app.diagrams.net
 
-.. |PythonVersions| image:: https://img.shields.io/badge/python-2.7+ / 3.6+-red.svg
+.. |PythonVersions| image:: https://img.shields.io/badge/python-3.6+-red.svg
    :target: https://www.python.org/downloads
-   :alt: Python 2.7+/3.6+
+   :alt: Python 3.6+
 
 .. |PypiPackage| image:: https://badge.fury.io/py/pibooth-picture-template.svg
    :target: https://pypi.org/project/pibooth-picture-template
