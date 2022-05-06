@@ -8,6 +8,7 @@ import os.path as osp
 from urllib.parse import unquote
 from xml.etree import ElementTree
 from PIL import Image, ImageDraw
+from io import BytesIO
 
 import pibooth
 from pibooth import fonts
@@ -145,6 +146,22 @@ class TemplateParser(object):
                     posy = posy % size[1]
                 subdata.setdefault('texts', []).append((posx, posy, width, height, rotation))
 
+            shapes = self.parse_shapes(template)
+            for shape in shapes:
+                style = self.parse_style(shape)
+                rotation = -int(style.get('rotation', 0))
+                posx, posy, width, height = self.parse_geometry(shape, dpi)
+                image = style.get('image')[0]
+                if posx + width <= 0 or posx >= size[0]:
+                    LOGGER.warning("Template shape '%s' X-position out of bounds, try to auto-adjust",
+                                   shape.get('value'))
+                    posx = posx % size[0]
+                if posy + height <= 0 or posy >= size[1]:
+                    LOGGER.warning("Template shape '%s' Y-position out of bounds, try to auto-adjust",
+                                   shape.get('value'))
+                    posy = posy % size[1]
+                subdata.setdefault('shapes', []).append((posx, posy, width, height, rotation, image))
+
             subdata['size'] = size
             subdata['orientation'] = orientation
 
@@ -159,6 +176,7 @@ class TemplateParser(object):
 
         if not data:
             raise TemplateParserError("No template found in '{}'".format(self.filename))
+
         return data
 
     def parse_style(self, mxcell_node):
@@ -172,7 +190,7 @@ class TemplateParser(object):
         if '=' not in style[0]:
             styledict['name'] = style.pop(0)
         for key_value in style:
-            key, value = key_value.split('=')
+            key, *value = key_value.split('=')
             styledict[key] = value
         return styledict
 
@@ -191,6 +209,17 @@ class TemplateParser(object):
         height = px(geometry.attrib['height'], dpi)
         return x, y, width, height
 
+    def parse_shapes(self, mxgraph_node):
+        """Parse shape nodes.
+
+        :param mxgraph_node: 'mxGraphModel' node
+        :type mxgraph_node: :py:class:`ElementTree.Element`
+        """
+        shapes = [cell for cell in mxgraph_node.iter('mxCell')
+                    if cell.get('vertex') == "1" and cell.get('style').startswith('shape=image')]
+        return sorted(shapes, key=lambda x: x.get('value'))
+
+
     def parse_captures(self, mxgraph_node):
         """Parse capture nodes.
 
@@ -198,7 +227,7 @@ class TemplateParser(object):
         :type mxgraph_node: :py:class:`ElementTree.Element`
         """
         captures = [cell for cell in mxgraph_node.iter('mxCell')
-                    if cell.get('vertex') == "1" and not cell.get('style').startswith('text;')]
+                    if cell.get('vertex') == "1" and not cell.get('style').startswith('text;') and not cell.get('style').startswith('shape=image')]
         if len(captures) > 4 or len(captures) < 1:
             raise TemplateParserError("Too many captures positions ({}) in template '{}' (1 to 4 expected)".format(
                 len(captures), mxgraph_node.get('name')))
@@ -281,6 +310,16 @@ class TemplateParser(object):
         """
         return self.get('captures', capture_number, orientation)
 
+    def get_shape_rects(self, capture_number, orientation=pictures.PORTRAIT):
+        """Return the list of top-left coordinates and max size rectangle.
+
+        :param capture_number: number of captures to assemble
+        :type capture_number: int
+        :param orientation: 'portrait' or 'landscape'
+        :type orientation: str
+        """
+        return self.get('shapes', capture_number, orientation)
+
     def get_text_rects(self, capture_number, orientation=pictures.PORTRAIT):
         """Return the list of top-left coordinates and max size rectangle.
 
@@ -307,6 +346,15 @@ class TemplatePictureFactory(PilPictureFactory):
         :rtype: tuple
         """
         for rect in self.template.get_capture_rects(len(self._images), self.orientation):
+            yield rect
+
+    def _iter_shapes_rects(self):
+        """Yield top-left coordinates and max size rectangle for each shapes.
+
+        :return: (image_x, image_y, image_width, image_height, image_angle)
+        :rtype: tuple
+        """
+        for rect in self.template.get_shape_rects(len(self._images), self.orientation):
             yield rect
 
     def _iter_texts_rects(self, interline=None):
@@ -357,6 +405,19 @@ class TemplatePictureFactory(PilPictureFactory):
             rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
             self._image_paste(src_image, rect, (max_w - width) // 2, (max_h - height) // 2)
             self._image_paste(rect, image, pos_x, pos_y, rotation)
+
+        shapes_offset_generator = self._iter_shapes_rects()
+        for shape in shapes_offset_generator:
+            pos_x, pos_y, max_w, max_h, rotation, shape_img = shape;
+            prefix = shape_img.split(',')[0]
+            shape_img = shape_img[len(prefix) + 1:]
+            shape_img += '=' * (-len(shape_img) % 4)  # restore stripped '='s
+            shape_img = base64.b64decode(shape_img)
+            shape_img = BytesIO(shape_img)
+            shape_img = Image.open(shape_img)
+            shape_img = shape_img.resize((max_w, max_h))
+            self._image_paste(shape_img, image, pos_x, pos_y, rotation)
+
         return image
 
     def _build_texts(self, image):
