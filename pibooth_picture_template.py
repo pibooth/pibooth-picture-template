@@ -111,13 +111,11 @@ class TemplateParser(object):
             orientation = pictures.PORTRAIT if size[0] < size[1] else pictures.LANDSCAPE
 
             captures = self.parse_captures(template)
-            subdata = data.setdefault(orientation, {}).setdefault(len(captures), {})
-            if subdata:
-                raise TemplateParserError("Several templates with {} captures are defined".format(
-                    len(captures)))
-
+            _captures = []
+            count_captures = set()
             for capture in captures:
                 style = self.parse_style(capture)
+                count_captures.add(capture.get('value'))
                 rotation = -int(style.get('rotation', 0))
                 posx, posy, width, height = self.parse_geometry(capture, dpi)
                 if posx + width <= 0 or posx >= size[0]:  # If capture is on the left or the right of the page
@@ -128,8 +126,10 @@ class TemplateParser(object):
                     LOGGER.warning("Template capture '%s' Y-position out of bounds, try to auto-adjust",
                                    capture.get('value'))
                     posy = posy % size[1]
-                subdata.setdefault('captures', []).append((posx, posy, width, height, rotation))
+                _captures.append((posx, posy, width, height, rotation,capture.get('value')))
 
+            subdata = data.setdefault(orientation, {}).setdefault(len(count_captures), {})
+            subdata.setdefault('captures', _captures)
             texts = self.parse_texts(template)
             for text in texts:
                 style = self.parse_style(text)
@@ -143,7 +143,7 @@ class TemplateParser(object):
                     LOGGER.warning("Template text '%s' Y-position out of bounds, try to auto-adjust",
                                    text.get('value'))
                     posy = posy % size[1]
-                subdata.setdefault('texts', []).append((posx, posy, width, height, rotation))
+                subdata.setdefault('texts', []).append((posx, posy, width, height, rotation,text.get('value')))
 
             subdata['size'] = size
             subdata['orientation'] = orientation
@@ -199,9 +199,6 @@ class TemplateParser(object):
         """
         captures = [cell for cell in mxgraph_node.iter('mxCell')
                     if cell.get('vertex') == "1" and not cell.get('style').startswith('text;')]
-        if len(captures) > 4 or len(captures) < 1:
-            raise TemplateParserError("Too many captures positions ({}) in template '{}' (1 to 4 expected)".format(
-                len(captures), mxgraph_node.get('name')))
         return sorted(captures, key=lambda x: x.get('value'))
 
     def parse_texts(self, mxgraph_node):
@@ -350,9 +347,13 @@ class TemplatePictureFactory(PilPictureFactory):
         :return: drawn image
         :rtype: :py:class:`PIL.Image`
         """
-        offset_generator = self._iter_images_rects()
+        images = []
         for src_image in self._iter_images():
-            pos_x, pos_y, max_w, max_h, rotation = next(offset_generator)
+            images.append(src_image)
+
+        for _offset in self._iter_images_rects():
+            pos_x, pos_y, max_w, max_h, rotation, value = _offset
+            src_image = images[int(value)-1]
             src_image, width, height = self._image_resize_keep_ratio(src_image, max_w, max_h, self._crop)
             rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
             self._image_paste(src_image, rect, (max_w - width) // 2, (max_h - height) // 2)
@@ -365,9 +366,13 @@ class TemplatePictureFactory(PilPictureFactory):
         :param image: image to draw on
         :type image: :py:class:`PIL.Image`
         """
-        offset_generator = self._iter_texts_rects()
-        for text, font_name, color, align in self._texts:
-            pos_x, pos_y, max_w, max_h, angle = next(offset_generator)
+
+        for _offset in self._iter_texts_rects():
+            pos_x, pos_y, max_w, max_h, angle,value = _offset
+            index= int(value[-1]) -1
+            if len(self._texts) <= index:
+                continue
+            text, font_name, color, align = self._texts[index]
             if not text:  # Empty string: go to next text position
                 continue
 
@@ -395,13 +400,13 @@ class TemplatePictureFactory(PilPictureFactory):
         :type image: :py:class:`PIL.Image`
         """
         draw = ImageDraw.Draw(image)
-        for pos_x, pos_y, width, height, angle in self._iter_images_rects():
+        for pos_x, pos_y, width, height, angle,value in self._iter_images_rects():
             rect = Image.new('RGBA', (width, height), (255, 0, 0, 0))
             draw = ImageDraw.Draw(rect)
             draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
             self._image_paste(rect, image, pos_x, pos_y, angle)
         if self._texts:
-            for pos_x, pos_y, width, height, angle in self._iter_texts_rects():
+            for pos_x, pos_y, width, height, angle,value in self._iter_texts_rects():
                 rect = Image.new('RGBA', (width, height), (0, 255, 0, 0))
                 draw = ImageDraw.Draw(rect)
                 draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
