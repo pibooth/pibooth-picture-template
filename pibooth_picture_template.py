@@ -369,7 +369,10 @@ class TemplatePictureFactory(PilPictureFactory):
 
         for _offset in self._iter_texts_rects():
             pos_x, pos_y, max_w, max_h, angle,value = _offset
-            index= int(value[-1]) -1
+            _index = value[-1]
+            if not isinstance(_index , int):
+                continue
+            index= int(_index) -1
             if len(self._texts) <= index:
                 continue
             text, font_name, color, align = self._texts[index]

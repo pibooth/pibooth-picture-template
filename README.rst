@@ -62,6 +62,7 @@ Symetric template
 -------------------
 If you want to have several times the same picture, or the same text in the template, it is possible.
 This allows you to have symmetric template for example (one copy for you, one for your guests).
+Important: For texts, you need to end it with a number, otherwise it will not be able to recognize it.
 
 
 .. image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/symetric_template.jpg?raw=true
