@@ -23,8 +23,8 @@ def test_capture_text(nbr, template):
         with pytest.raises(TemplateParserError):
             parser.get_text_rects(nbr)
     elif template.endswith('symetric_template.xml'):
-        assert len(parser.get_capture_rects(nbr)) == nbr * 2 # Excepecting 2 times more pictures to be captured
-        assert len(parser.get_text_rects(nbr)) == 2 * 2 # Excepecting 2 times more texts to be captured
+        assert len(parser.get_capture_rects(nbr)) == nbr * 2, "Excepecting 2 times more pictures to be captured"
+        assert len(parser.get_text_rects(nbr)) == 2 * 2, "Excepecting 2 times more texts to be captured"
     else:
         assert len(parser.get_capture_rects(nbr)) == nbr
         assert len(parser.get_text_rects(nbr)) == 2
@@ -52,4 +52,3 @@ def test_text_positions(nbr, template):
     for rect in parser.get_text_rects(nbr):
         rect = pygame.Rect(*rect[:4])
         assert rect.colliderect(pygame.Rect(0, 0, *parser.get_size(nbr)))
-

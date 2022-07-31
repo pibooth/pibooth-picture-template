@@ -1,4 +1,0 @@
-pibooth==2.0.5
-pygame==2.1.2
-Pillow==9.1.0
-pytest==7.1.2
