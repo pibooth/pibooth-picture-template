@@ -140,9 +140,10 @@ Step 5: add new a template
              other captures number or other orientation. Click on ``+`` to add
              a new page.
 
- |step5_2|   The captures and texts placeholders can be numbered to define the
+ |step5_2|   The captures/texts placeholders shall be numbered to define the
              captures/texts to be placed inside. Colored shapes give a better
-             overview of the layout but they are not rendered on the final picture.
+             overview of the layout but they are not rendered on the final
+             picture.
 ===========  ==================================================================
 
 .. note:: The same picture can be used several times in the template to allows a
