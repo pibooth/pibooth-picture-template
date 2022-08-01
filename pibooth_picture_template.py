@@ -7,7 +7,7 @@ import base64
 import os.path as osp
 from urllib.parse import unquote
 from xml.etree import ElementTree
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 import pibooth
 from pibooth import fonts
@@ -430,18 +430,19 @@ class TemplatePictureFactory(PilPictureFactory):
         :type image: :py:class:`PIL.Image`
         """
         draw = ImageDraw.Draw(image)
+        font = ImageFont.load_default() 
         for pos_x, pos_y, width, height, angle, index in self._iter_images_rects():
             rect = Image.new('RGBA', (width, height), (255, 0, 0, 0))
             draw = ImageDraw.Draw(rect)
             draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-            draw.text((10, 10), str(index + 1))
+            draw.text((10, 10), str(index + 1), 'red', font)
             self._image_paste(rect, image, pos_x, pos_y, angle)
         if self._texts:
             for pos_x, pos_y, width, height, angle, index in self._iter_texts_rects():
                 rect = Image.new('RGBA', (width, height), (0, 255, 0, 0))
                 draw = ImageDraw.Draw(rect)
                 draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-                draw.text((10, 10), str(index + 1))
+                draw.text((10, 10), str(index + 1), 'red', font)
                 self._image_paste(rect, image, pos_x, pos_y, angle)
 
 
