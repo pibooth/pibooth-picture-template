@@ -129,13 +129,8 @@ class TemplateParser(object):
                 captures_params.append((posx, posy, width, height, rotation, int(capture.get('value')) - 1))
                 distinct_capture_count.add(capture.get('value'))
 
-            subdata = data.setdefault(orientation, {}).setdefault(len(distinct_capture_count), {})
-            if subdata:
-                raise TemplateParserError(
-                    "Several templates with {} captures are defined".format(len(distinct_capture_count)))
-            subdata['captures'] = captures_params
-
             texts = self.parse_texts(template)
+            texts_params = []
             for text in texts:
                 style = self.parse_style(text)
                 rotation = -int(style.get('rotation', 0))
@@ -148,9 +143,15 @@ class TemplateParser(object):
                     LOGGER.warning("Template text '%s' Y-position out of bounds, try to auto-adjust",
                                    text.get('value'))
                     posy = posy % size[1]
-                subdata.setdefault('texts', []).append(
-                    (posx, posy, width, height, rotation, int(text.get('value')) - 1))
+                texts_params.append((posx, posy, width, height, rotation, int(text.get('value')) - 1))
 
+            # Create template parameters dictionary
+            subdata = data.setdefault(orientation, {}).setdefault(len(distinct_capture_count), {})
+            if subdata:
+                raise TemplateParserError(
+                    "Several templates with {} captures are defined".format(len(distinct_capture_count)))
+            subdata['captures'] = captures_params
+            subdata['texts'] = texts_params
             subdata['size'] = size
             subdata['orientation'] = orientation
 
@@ -203,19 +204,21 @@ class TemplateParser(object):
         :param mxgraph_node: 'mxGraphModel' node
         :type mxgraph_node: :py:class:`ElementTree.Element`
         """
-        # Take only captures with a correct number
-        captures = [cell for cell in mxgraph_node.iter('mxCell')
-                    if cell.get('vertex') == "1" and not cell.get('style').startswith('text;')
-                    and cell.get('value') in ("1", "2", "3", "4")]
-
-
+        captures = []
         for cell in mxgraph_node.iter('mxCell'):
             if cell.get('vertex') == "1" and not cell.get('style').startswith('text;'):
-                cell.get('value')
-                import pdb
-                pdb.set_trace()
-        for capture in captures:
-            capture.set('value', capture.get('value')[-1])  # Keep ony index value
+                try:
+                    # XML format for font can be set in the value
+                    value = ElementTree.fromstring(cell.get('value')).text
+                except ElementTree.ParseError:
+                    value = cell.get('value')
+
+                # Take only captures with a correct number
+                if value in ("1", "2", "3", "4"):
+                    cell.set('value', value)
+                    captures.append(cell)
+                else:
+                    LOGGER.warning("Template capture holder with text '%s' ignored", value)
 
         return sorted(captures, key=lambda x: x.get('value'))
 
@@ -225,12 +228,21 @@ class TemplateParser(object):
         :param mxgraph_node: 'mxGraphModel' node
         :type mxgraph_node: :py:class:`ElementTree.Element`
         """
-        texts = [cell for cell in mxgraph_node.iter('mxCell')
-                 if cell.get('vertex') == "1" and cell.get('style').startswith('text;')
-                 and cell.get('value') in ("1", "2", "footer_text1", "footer_text2")]
+        texts = []
+        for cell in mxgraph_node.iter('mxCell'):
+            if cell.get('vertex') == "1" and cell.get('style').startswith('text;'):
+                try:
+                    # XML format for font can be set in the value
+                    value = ElementTree.fromstring(cell.get('value')).text
+                except ElementTree.ParseError:
+                    value = cell.get('value')
 
-        for text in texts:
-            text.set('value', text.get('value')[-1])  # Keep ony index value
+                # Take only captures with a correct number
+                if value in ("1", "2", "footer_text1", "footer_text2"):
+                    cell.set('value', value[-1])  # Keep ony index value
+                    texts.append(cell)
+                else:
+                    LOGGER.warning("Template text holder with text '%s' ignored", value)
 
         return sorted(texts, key=lambda x: x.get('value'))
 
