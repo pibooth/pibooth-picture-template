@@ -140,10 +140,16 @@ Step 5: add new a template
              other captures number or other orientation. Click on ``+`` to add
              a new page.
 
- |step5_2|   The captures and texts placeholders can be numbered to define the
-             order of the captures/texts. Colored shapes give a better overview
-             of the layout but they are not rendered on the final picture.
+ |step5_2|   The captures/texts placeholders shall be numbered to define the
+             captures/texts to be placed inside. Colored shapes give a better
+             overview of the layout but they are not rendered on the final
+             picture.
 ===========  ==================================================================
+
+.. note:: The same picture can be used several times in the template to allows a
+          symmetric template for example (one copy for you, one for your guests).
+
+|placeholders_numbering|
 
 Step 6: save the template file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -275,3 +281,7 @@ Step 6: save the template file
 .. |step6_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_2_export.png?raw=true
    :width: 80 %
    :alt: step6_2_export
+
+.. |placeholders_numbering| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/symetric_template.jpg?raw=true
+   :width: 80 %
+   :alt: Symetric Template

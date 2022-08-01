@@ -22,6 +22,12 @@ def test_capture_text(nbr, template):
             parser.get_capture_rects(nbr)
         with pytest.raises(TemplateParserError):
             parser.get_text_rects(nbr)
+    elif template.endswith('symetric_template.xml'):
+        assert len(parser.get_capture_rects(nbr)) == nbr * 2, "Excepecting 2 times more pictures to be captured"
+        assert len(parser.get_text_rects(nbr)) == 2 * 2, "Excepecting 2 times more texts to be captured"
+    elif template.endswith('other_forms.xml'):
+        assert len(parser.get_capture_rects(nbr)) == nbr
+        assert len(parser.get_text_rects(nbr)) >= 1
     else:
         assert len(parser.get_capture_rects(nbr)) == nbr
         assert len(parser.get_text_rects(nbr)) == 2
