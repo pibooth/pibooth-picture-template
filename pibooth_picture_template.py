@@ -430,7 +430,7 @@ class TemplatePictureFactory(PilPictureFactory):
         :type image: :py:class:`PIL.Image`
         """
         draw = ImageDraw.Draw(image)
-        font = ImageFont.load_default() 
+        font = ImageFont.load_default()
         for pos_x, pos_y, width, height, angle, index in self._iter_images_rects():
             rect = Image.new('RGBA', (width, height), (255, 0, 0, 0))
             draw = ImageDraw.Draw(rect)
