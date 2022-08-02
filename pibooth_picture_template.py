@@ -428,9 +428,9 @@ class TemplatePictureFactory(PilPictureFactory):
             elif shape.type == TemplateShapeParser.TYPE_IMAGE:
                 data = base64.b64decode(shape.image.split(',', 1)[1])
                 src_image = Image.open(BytesIO(data))
-                src_image = image.resize((shape.width, shape.height))
+                src_image = src_image.resize((shape.width, shape.height))
                 rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
-                self._image_paste(src_image, rect, shape.x, shape.y)
+                self._image_paste(src_image, rect, 0, 0)
                 self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
 
         return image
