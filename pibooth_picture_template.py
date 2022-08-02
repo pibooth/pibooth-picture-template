@@ -5,6 +5,7 @@
 import zlib
 import base64
 import os.path as osp
+from io import BytesIO
 from urllib.parse import unquote
 from xml.etree import ElementTree
 from PIL import Image, ImageDraw, ImageFont
@@ -101,13 +102,15 @@ class TemplateParser(object):
         for diagram in doc.iter('diagram'):
 
             if not list(diagram) and diagram.text.strip():  # Compressed
-                template = ElementTree.fromstring(self.inflate(diagram.text, True))
+                template = ElementTree.fromstring(
+                    self.inflate(diagram.text, True))
             else:
                 template = diagram.find('mxGraphModel')
 
             template.set('name', diagram.get('name'))
             dpi = int(template[0][0].get('dpi', 600))
-            size = (px(template.attrib['pageWidth'], dpi), px(template.attrib['pageHeight'], dpi))
+            size = (px(template.attrib['pageWidth'], dpi), px(
+                template.attrib['pageHeight'], dpi))
             orientation = pictures.PORTRAIT if size[0] < size[1] else pictures.LANDSCAPE
 
             shapes = []
@@ -117,7 +120,7 @@ class TemplateParser(object):
 
                 if shape.type == TemplateShapeParser.TYPE_UNKNOWN:
                     continue
-    
+
                 if shape.type == TemplateShapeParser.TYPE_CAPTURE:
                     # Take only captures with a correct number
                     if shape.text in ("1", "2", "3", "4"):
@@ -137,26 +140,33 @@ class TemplateParser(object):
                 else:
                     shapes.append(shape)
 
-                if shape.x + shape.width <= 0 or shape.x >= size[0]:  # If shape is on the left or the right of the page
+                # If shape is on the left or the right of the page
+                if shape.x + shape.width <= 0 or shape.x >= size[0]:
                     LOGGER.warning("Template shape '%s' X-position out of bounds, try to auto-adjust", shape.text)
                     shape.x = shape.x % size[0]
-            
-                if shape.y + shape.height <= 0 or shape.y >= size[1]:  # If shape is above or below the page
+
+                # If shape is above or below the page
+                if shape.y + shape.height <= 0 or shape.y >= size[1]:
                     LOGGER.warning("Template shape '%s' Y-position out of bounds, try to auto-adjust", shape.text)
                     shape.y = shape.y % size[1]
 
             # Create template parameters dictionary
-            subdata = data.setdefault(orientation, {}).setdefault(len(distinct_capture_count), {})
+            subdata = data.setdefault(orientation, {}).setdefault(
+                len(distinct_capture_count), {})
             if subdata:
-                raise TemplateParserError("Several templates with {} captures are defined".format(len(distinct_capture_count)))
+                raise TemplateParserError(
+                    "Several templates with {} captures are defined".format(len(distinct_capture_count)))
             subdata['shapes'] = shapes
             subdata['size'] = size
             subdata['orientation'] = orientation
 
             # Calculate the orientation majority for this template
-            captures = [shape for shape in shapes if shape.type == TemplateShapeParser.TYPE_CAPTURE]
-            texts = [shape for shape in shapes if shape.type == TemplateShapeParser.TYPE_TEXT]
-            portraits = [shape for shape in shapes if shape.width < shape.height]
+            captures = [shape for shape in shapes if shape.type ==
+                        TemplateShapeParser.TYPE_CAPTURE]
+            texts = [shape for shape in shapes if shape.type ==
+                     TemplateShapeParser.TYPE_TEXT]
+            portraits = [
+                shape for shape in shapes if shape.width < shape.height]
             if len(portraits) * 1.0 / len(captures) >= 0.5:
                 subdata['captures_orientation'] = pictures.PORTRAIT
             else:
@@ -166,7 +176,8 @@ class TemplateParser(object):
                         len(captures), len(texts), len(shapes) - (len(captures) + len(texts)))
 
         if not data:
-            raise TemplateParserError("No template found in '{}'".format(self.filename))
+            raise TemplateParserError(
+                "No template found in '{}'".format(self.filename))
         return data
 
     def get(self, key, capture_number, orientation=pictures.PORTRAIT):
@@ -181,7 +192,8 @@ class TemplateParser(object):
         """
         assert orientation in (pictures.PORTRAIT, pictures.LANDSCAPE)
         if orientation not in self.data:
-            raise TemplateParserError("No template for '{}' orientation".format(orientation))
+            raise TemplateParserError(
+                "No template for '{}' orientation".format(orientation))
         if capture_number not in self.data[orientation]:
             raise TemplateParserError(
                 "No template for '{}' captures (orientation={})".format(capture_number, orientation))
@@ -267,6 +279,7 @@ class TemplateShapeParser(object):
     def __init__(self, mxcell_node, dpi):
         self.text = self.parse_text(mxcell_node)
         self.style = self.parse_style(mxcell_node)
+        self.image = self.style.get('image')
         self.rotation = -int(self.style.get('rotation', 0))
         self.x, self.y, self.width, self.height = self.parse_geometry(mxcell_node, dpi)
 
@@ -304,11 +317,12 @@ class TemplateShapeParser(object):
         """
         styledict = {'name': ''}
         if 'style' in mxcell_node.attrib:
-            style = [p for p in mxcell_node.attrib['style'].split(';') if p.strip()]
+            style = [p for p in mxcell_node.attrib['style'].split(
+                ';') if p.strip()]
             if '=' not in style[0]:
                 styledict['name'] = style.pop(0)
             for key_value in style:
-                key, value = key_value.split('=')
+                key, value = key_value.split('=', 1)
                 styledict[key] = value
         return styledict
 
@@ -340,25 +354,10 @@ class TemplatePictureFactory(PilPictureFactory):
         super(TemplatePictureFactory, self).__init__(size[0], size[1], *images)
 
     def _iter_images_rects(self):
-        """Yield top-left coordinates and max size rectangle for each source image.
-
-        :return: (image_x, image_y, image_width, image_height, image_angle)
-        :rtype: tuple
-        """
-        for rect in self.template.get_capture_rects(len(self._images), self.orientation):
-            yield rect
+        raise NotImplementedError("Not applicable for template")
 
     def _iter_texts_rects(self, interline=None):
-        """Yield top-left coordinates and max size rectangle for each text.
-
-        :param interline: margin between each text line
-        :type interline: int
-
-        :return: (text_x, text_y, text_width, text_height, text_angle)
-        :rtype: tuple
-        """
-        for rect in self.template.get_text_rects(len(self._images), self.orientation):
-            yield rect
+        raise NotImplementedError("Not applicable for template")
 
     def _image_paste(self, image, dest_image, pos_x, pos_y, angle=None):
         """Paste an image onto an other one with the given rotation angle.
@@ -378,69 +377,66 @@ class TemplatePictureFactory(PilPictureFactory):
         if angle:
             image = image.rotate(angle, expand=True)
         dest_image.paste(image,
-                         (pos_x + (width - image.width)//2, pos_y + (height - image.height)//2),
+                         (pos_x + (width - image.width)//2,
+                          pos_y + (height - image.height)//2),
                          image if angle is not None else None)
 
     def _build_matrix(self, image):
-        """Draw the source images on the given image.
+        """Draw all shape in the order defined in the template.
 
         :param image: image to draw on
         :type image: :py:class:`PIL.Image`
         :return: drawn image
         :rtype: :py:class:`PIL.Image`
         """
-        for params in self._iter_images_rects():
-            pos_x, pos_y, max_w, max_h, rotation, index = params
-            if len(self._images) <= index:
-                continue  # No image available for this index
+        for shape in self.template.get_rects(len(self._images), self.orientation):
+            if shape.type == TemplateShapeParser.TYPE_CAPTURE:
+                index = int(shape.text) - 1
+                if len(self._images) <= index:
+                    continue  # No image available for this index
 
-            src_image = self._images[index]
-            src_image, width, height = self._image_resize_keep_ratio(src_image, max_w, max_h, self._crop)
-            rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
-            self._image_paste(src_image, rect, (max_w - width) // 2, (max_h - height) // 2)
-            self._image_paste(rect, image, pos_x, pos_y, rotation)
+                src_image = self._images[index]
+                src_image, width, height = self._image_resize_keep_ratio(src_image,
+                                                                         shape.width,
+                                                                         shape.height,
+                                                                         self._crop)
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                self._image_paste(src_image, rect, (shape.width - width) // 2, (shape.height - height) // 2)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
 
-        shapes_offset_generator = self._iter_shapes_rects()
-        for shape in shapes_offset_generator:
-            pos_x, pos_y, max_w, max_h, rotation, shape_img = shape;
-            prefix = shape_img.split(',')[0]
-            shape_img = shape_img[len(prefix) + 1:]
-            shape_img += '=' * (-len(shape_img) % 4)  # restore stripped '='s
-            shape_img = base64.b64decode(shape_img)
-            shape_img = BytesIO(shape_img)
-            shape_img = Image.open(shape_img)
-            shape_img = shape_img.resize((max_w, max_h))
-            self._image_paste(shape_img, image, pos_x, pos_y, rotation)
+            elif shape.type == TemplateShapeParser.TYPE_TEXT:
+                index = int(shape.text) - 1
+                if len(self._texts) <= index:
+                    continue  # No text available for this index
+
+                text, font_name, color, align = self._texts[index]
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                draw = ImageDraw.Draw(rect)
+                font = fonts.get_pil_font(text, font_name, shape.width, shape.height)
+                _, text_height = font.getsize(text)
+                (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
+
+                x = 0
+                if align == self.CENTER:
+                    x += (shape.width - text_width) // 2
+                elif align == self.RIGHT:
+                    x += (shape.width - text_width)
+
+                draw.text((x - offset_x // 2, (shape.height - text_height) // 2 - offset_y // 2), text, color, font=font)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
+
+            elif shape.type == TemplateShapeParser.TYPE_IMAGE:
+                data = base64.b64decode(shape.image.split(',', 1)[1])
+                src_image = Image.open(BytesIO(data))
+                src_image = image.resize((shape.width, shape.height))
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                self._image_paste(src_image, rect, shape.x, shape.y)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
 
         return image
 
     def _build_texts(self, image):
-        """Draw texts on a PIL image.
-
-        :param image: image to draw on
-        :type image: :py:class:`PIL.Image`
-        """
-        for params in self._iter_texts_rects():
-            pos_x, pos_y, max_w, max_h, angle, index = params
-            if len(self._texts) <= index:
-                continue  # No text available for this index
-
-            text, font_name, color, align = self._texts[index]
-            rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
-            draw = ImageDraw.Draw(rect)
-            font = fonts.get_pil_font(text, font_name, max_w, max_h)
-            _, text_height = font.getsize(text)
-            (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
-
-            x = 0
-            if align == self.CENTER:
-                x += (max_w - text_width) // 2
-            elif align == self.RIGHT:
-                x += (max_w - text_width)
-
-            draw.text((x - offset_x // 2, (max_h - text_height) // 2 - offset_y // 2),
-                      text, color, font=font)
-            self._image_paste(rect, image, pos_x, pos_y, angle)
+        pass  # Texts are drawn with capture matrix to preserve order defined in template
 
     def _build_outlines(self, image):
         """Draw outlines for captures and texts which is useful to investigate
@@ -451,19 +447,12 @@ class TemplatePictureFactory(PilPictureFactory):
         """
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
-        for pos_x, pos_y, width, height, angle, index in self._iter_images_rects():
-            rect = Image.new('RGBA', (width, height), (255, 0, 0, 0))
+        for shape in self.template.get_rects(len(self._images), self.orientation):
+            rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
             draw = ImageDraw.Draw(rect)
-            draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-            draw.text((10, 10), str(index + 1), 'red', font)
-            self._image_paste(rect, image, pos_x, pos_y, angle)
-        if self._texts:
-            for pos_x, pos_y, width, height, angle, index in self._iter_texts_rects():
-                rect = Image.new('RGBA', (width, height), (0, 255, 0, 0))
-                draw = ImageDraw.Draw(rect)
-                draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-                draw.text((10, 10), str(index + 1), 'red', font)
-                self._image_paste(rect, image, pos_x, pos_y, angle)
+            draw.rectangle(((0, 0), (shape.width - 1, shape.height - 1)), outline='red')
+            draw.text((10, 10), shape.text, 'red', font)
+            self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
 
 
 DEFAULT = """<?xml version="1.0" encoding="UTF-8"?>
