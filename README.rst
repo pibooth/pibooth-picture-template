@@ -108,10 +108,10 @@ Step 2: placeholder for captures
              overflow the border of the page to make design effects. Up to 4
              rectangles can be drawn.
 
- |step2_3|   The captures placeholders shall be numbered (1 to 4) to define the
-             captures to be placed inside. Colored shapes give a better
-             overview of the layout but they are not rendered on the final
-             picture.
+ |step2_3|   The captures placeholders shall be numbered (``1`` to ``4``) to
+             define the captures to be placed inside. Colored shapes give a
+             better overview of the layout but they are not rendered on the
+             final picture.
 ===========  ==================================================================
 
 .. note:: Images can also be inserted in the template. Use the option ``To back``
@@ -126,8 +126,9 @@ Step 3: placeholder for texts
  |step3_2|   Resize the text box to fit the desired size. Up to 2 text boxes
              can be drawn depending on the  `pibooth`_ configuration.
 
- |step2_3|   The text placeholders shall be numbered (1, 2, footer_text1
-             or footer_text2) to define the text to be placed inside.
+ |step2_3|   The text placeholders shall be numbered (``1``, ``2``,
+             ``footer_text1`` or ``footer_text2``) to define the text to be
+             placed inside.
 ===========  ==================================================================
 
 Step 4: picture resolution
