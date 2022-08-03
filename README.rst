@@ -107,7 +107,15 @@ Step 2: placeholder for captures
  |step2_2|   Resize the rectangle to fit the desired size. The rectangle can
              overflow the border of the page to make design effects. Up to 4
              rectangles can be drawn.
+
+ |step2_3|   The captures placeholders shall be numbered (``1`` to ``4``) to
+             define the captures to be placed inside. Colored shapes give a
+             better overview of the layout but they are not rendered on the
+             final picture.
 ===========  ==================================================================
+
+.. note:: Images can also be inserted in the template. Use the option ``To back``
+          or ``To Front`` to chose the displayed order (PNG and JPG format accepted).
 
 Step 3: placeholder for texts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -117,6 +125,10 @@ Step 3: placeholder for texts
 
  |step3_2|   Resize the text box to fit the desired size. Up to 2 text boxes
              can be drawn depending on the  `pibooth`_ configuration.
+
+ |step2_3|   The text placeholders shall be numbered (``1``, ``2``,
+             ``footer_text1`` or ``footer_text2``) to define the text to be
+             placed inside.
 ===========  ==================================================================
 
 Step 4: picture resolution
@@ -140,16 +152,10 @@ Step 5: add new a template
              other captures number or other orientation. Click on ``+`` to add
              a new page.
 
- |step5_2|   The captures/texts placeholders shall be numbered to define the
-             captures/texts to be placed inside. Colored shapes give a better
-             overview of the layout but they are not rendered on the final
-             picture.
+|step5_2|    The same picture can be used several times in the template to
+             allows a symmetric template for example (one copy for you, one for
+             your guests).
 ===========  ==================================================================
-
-.. note:: The same picture can be used several times in the template to allows a
-          symmetric template for example (one copy for you, one for your guests).
-
-|placeholders_numbering|
 
 Step 6: save the template file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -250,6 +256,10 @@ Step 6: save the template file
    :width: 80 %
    :alt: step2_2_rectangle_resize
 
+.. |step2_3| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
+   :width: 80 %
+   :alt: step2_3_numbering
+
 .. |step3_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step3_1_text.png?raw=true
    :width: 80 %
    :alt: step3_1_text
@@ -270,9 +280,9 @@ Step 6: save the template file
    :width: 80 %
    :alt: step5_1_new_template
 
-.. |step5_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
+.. |step5_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_symetric.jpg?raw=true
    :width: 80 %
-   :alt: step5_2_numbering
+   :alt: step5_2_symetric
 
 .. |step6_1| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_1_xml.png?raw=true
    :width: 80 %
@@ -281,7 +291,3 @@ Step 6: save the template file
 .. |step6_2| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step6_2_export.png?raw=true
    :width: 80 %
    :alt: step6_2_export
-
-.. |placeholders_numbering| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/symetric_template.jpg?raw=true
-   :width: 80 %
-   :alt: Symetric Template
