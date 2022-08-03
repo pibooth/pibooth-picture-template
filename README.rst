@@ -256,7 +256,7 @@ Step 6: save the template file
    :width: 80 %
    :alt: step2_2_rectangle_resize
 
-.. |step2_3| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step5_2_numbering.png?raw=true
+.. |step2_3| image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/step2_3_numbering.png?raw=true
    :width: 80 %
    :alt: step2_3_numbering
 
