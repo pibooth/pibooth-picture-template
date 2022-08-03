@@ -114,6 +114,9 @@ Step 2: placeholder for captures
              picture.
 ===========  ==================================================================
 
+.. note:: Images can also be inserted in the template. Use the option ``To back``
+          or ``To Front`` to chose the displayed order (PNG and JPG format accepted).
+
 Step 3: placeholder for texts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -122,6 +125,9 @@ Step 3: placeholder for texts
 
  |step3_2|   Resize the text box to fit the desired size. Up to 2 text boxes
              can be drawn depending on the  `pibooth`_ configuration.
+
+ |step2_3|   The text placeholders shall be numbered (1, 2, footer_text1
+             or footer_text2) to define the text to be placed inside.
 ===========  ==================================================================
 
 Step 4: picture resolution
