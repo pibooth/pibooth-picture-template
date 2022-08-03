@@ -294,7 +294,7 @@ class TemplateShapeParser(object):
             self.type = self.TYPE_UNKNOWN
 
     def __repr__(self):
-        return f"TemplateShapeParser('{self.text}', {self.type})"
+        return f"Shape(text='{self.text}', type={self.type})"
 
     def parse_text(self, mxcell_node):
         """Extarct text.
@@ -317,8 +317,7 @@ class TemplateShapeParser(object):
         """
         styledict = {'name': ''}
         if 'style' in mxcell_node.attrib:
-            style = [p for p in mxcell_node.attrib['style'].split(
-                ';') if p.strip()]
+            style = [p for p in mxcell_node.attrib['style'].split(';') if p.strip()]
             if '=' not in style[0]:
                 styledict['name'] = style.pop(0)
             for key_value in style:
