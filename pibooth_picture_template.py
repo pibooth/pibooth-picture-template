@@ -5,6 +5,7 @@
 import zlib
 import base64
 import os.path as osp
+from io import BytesIO
 from urllib.parse import unquote
 from xml.etree import ElementTree
 from PIL import Image, ImageDraw, ImageFont
@@ -101,153 +102,86 @@ class TemplateParser(object):
         for diagram in doc.iter('diagram'):
 
             if not list(diagram) and diagram.text.strip():  # Compressed
-                template = ElementTree.fromstring(self.inflate(diagram.text, True))
+                template = ElementTree.fromstring(
+                    self.inflate(diagram.text, True))
             else:
                 template = diagram.find('mxGraphModel')
 
             template.set('name', diagram.get('name'))
             dpi = int(template[0][0].get('dpi', 600))
-            size = (px(template.attrib['pageWidth'], dpi), px(template.attrib['pageHeight'], dpi))
+            size = (px(template.attrib['pageWidth'], dpi), px(
+                template.attrib['pageHeight'], dpi))
             orientation = pictures.PORTRAIT if size[0] < size[1] else pictures.LANDSCAPE
 
-            captures = self.parse_captures(template)
-            captures_params = []
+            shapes = []
             distinct_capture_count = set()
-            for capture in captures:
-                style = self.parse_style(capture)
-                rotation = -int(style.get('rotation', 0))
-                posx, posy, width, height = self.parse_geometry(capture, dpi)
-                if posx + width <= 0 or posx >= size[0]:  # If capture is on the left or the right of the page
-                    LOGGER.warning("Template capture '%s' X-position out of bounds, try to auto-adjust",
-                                   capture.get('value'))
-                    posx = posx % size[0]
-                if posy + height <= 0 or posy >= size[1]:  # If capture is above or below the page
-                    LOGGER.warning("Template capture '%s' Y-position out of bounds, try to auto-adjust",
-                                   capture.get('value'))
-                    posy = posy % size[1]
+            for cell in template.iter('mxCell'):
+                shape = TemplateShapeParser(cell, dpi)
 
-                captures_params.append((posx, posy, width, height, rotation, int(capture.get('value')) - 1))
-                distinct_capture_count.add(capture.get('value'))
+                if shape.type == TemplateShapeParser.TYPE_UNKNOWN:
+                    continue
 
-            texts = self.parse_texts(template)
-            texts_params = []
-            for text in texts:
-                style = self.parse_style(text)
-                rotation = -int(style.get('rotation', 0))
-                posx, posy, width, height = self.parse_geometry(text, dpi)
-                if posx + width <= 0 or posx >= size[0]:
-                    LOGGER.warning("Template text '%s' X-position out of bounds, try to auto-adjust",
-                                   text.get('value'))
-                    posx = posx % size[0]
-                if posy + height <= 0 or posy >= size[1]:
-                    LOGGER.warning("Template text '%s' Y-position out of bounds, try to auto-adjust",
-                                   text.get('value'))
-                    posy = posy % size[1]
-                texts_params.append((posx, posy, width, height, rotation, int(text.get('value')) - 1))
+                if shape.type == TemplateShapeParser.TYPE_CAPTURE:
+                    # Take only captures with a correct number
+                    if shape.text in ("1", "2", "3", "4"):
+                        shapes.append(shape)
+                        distinct_capture_count.add(shape.text)
+                    else:
+                        LOGGER.warning("Template capture holder with text '%s' ignored", shape.text)
+
+                elif shape.type == TemplateShapeParser.TYPE_TEXT:
+                    # Take only text with a correct number
+                    if shape.text in ("1", "2", "footer_text1", "footer_text2"):
+                        shape.text = shape.text[-1]  # Keep ony index value
+                        shapes.append(shape)
+                    else:
+                        LOGGER.warning("Template text holder with text '%s' ignored", shape.text)
+
+                else:
+                    shapes.append(shape)
+
+                # If shape is on the left or the right of the page
+                if shape.x + shape.width <= 0 or shape.x >= size[0]:
+                    LOGGER.warning("Template shape '%s' X-position out of bounds, try to auto-adjust", shape.text)
+                    shape.x = shape.x % size[0]
+
+                # If shape is above or below the page
+                if shape.y + shape.height <= 0 or shape.y >= size[1]:
+                    LOGGER.warning("Template shape '%s' Y-position out of bounds, try to auto-adjust", shape.text)
+                    shape.y = shape.y % size[1]
 
             # Create template parameters dictionary
-            subdata = data.setdefault(orientation, {}).setdefault(len(distinct_capture_count), {})
+            subdata = data.setdefault(orientation, {}).setdefault(
+                len(distinct_capture_count), {})
             if subdata:
                 raise TemplateParserError(
                     "Several templates with {} captures are defined".format(len(distinct_capture_count)))
-            subdata['captures'] = captures_params
-            subdata['texts'] = texts_params
+            subdata['shapes'] = shapes
             subdata['size'] = size
             subdata['orientation'] = orientation
 
             # Calculate the orientation majority for this template
-            portraits = [pictures.PORTRAIT for rect in subdata['captures'] if rect[2] < rect[3]]
+            captures = [shape for shape in shapes if shape.type ==
+                        TemplateShapeParser.TYPE_CAPTURE]
+            texts = [shape for shape in shapes if shape.type ==
+                     TemplateShapeParser.TYPE_TEXT]
+            portraits = [
+                shape for shape in shapes if shape.width < shape.height]
             if len(portraits) * 1.0 / len(captures) >= 0.5:
                 subdata['captures_orientation'] = pictures.PORTRAIT
             else:
                 subdata['captures_orientation'] = pictures.LANDSCAPE
 
-            LOGGER.info("Found template '%s': %s captures - %s texts", template.get('name'), len(captures), len(texts))
+            LOGGER.info("Found template '%s': %s captures - %s texts - %s others", template.get('name'),
+                        len(captures), len(texts), len(shapes) - (len(captures) + len(texts)))
 
         if not data:
-            raise TemplateParserError("No template found in '{}'".format(self.filename))
+            raise TemplateParserError(
+                "No template found in '{}'".format(self.filename))
         return data
 
-    def parse_style(self, mxcell_node):
-        """Extract style data.
-
-        :param mxcell_node: 'mxCell' node
-        :type mxcell_node: :py:class:`ElementTree.Element`
-        """
-        styledict = {'name': ''}
-        style = [p for p in mxcell_node.attrib['style'].split(';') if p.strip()]
-        if '=' not in style[0]:
-            styledict['name'] = style.pop(0)
-        for key_value in style:
-            key, value = key_value.split('=')
-            styledict[key] = value
-        return styledict
-
-    def parse_geometry(self, mxcell_node, dpi=600):
-        """Extract geometry data.
-
-        :param mxcell_node: 'mxCell' node
-        :type mxcell_node: :py:class:`ElementTree.Element`
-        :param dpi: dot-per-inch
-        :type dpi: int
-        """
-        geometry = mxcell_node.find('mxGeometry')
-        x = px(geometry.get('x', 0), dpi)
-        y = px(geometry.get('y', 0), dpi)
-        width = px(geometry.attrib['width'], dpi)
-        height = px(geometry.attrib['height'], dpi)
-        return x, y, width, height
-
-    def parse_captures(self, mxgraph_node):
-        """Parse capture nodes and return only the numbered ones.
-
-        :param mxgraph_node: 'mxGraphModel' node
-        :type mxgraph_node: :py:class:`ElementTree.Element`
-        """
-        captures = []
-        for cell in mxgraph_node.iter('mxCell'):
-            if cell.get('vertex') == "1" and not cell.get('style').startswith('text;'):
-                try:
-                    # XML format for font can be set in the value
-                    value = ElementTree.fromstring(cell.get('value')).text
-                except ElementTree.ParseError:
-                    value = cell.get('value')
-
-                # Take only captures with a correct number
-                if value in ("1", "2", "3", "4"):
-                    cell.set('value', value)
-                    captures.append(cell)
-                else:
-                    LOGGER.warning("Template capture holder with text '%s' ignored", value)
-
-        return sorted(captures, key=lambda x: x.get('value'))
-
-    def parse_texts(self, mxgraph_node):
-        """Parse text nodes and return only the numbered ones.
-
-        :param mxgraph_node: 'mxGraphModel' node
-        :type mxgraph_node: :py:class:`ElementTree.Element`
-        """
-        texts = []
-        for cell in mxgraph_node.iter('mxCell'):
-            if cell.get('vertex') == "1" and cell.get('style').startswith('text;'):
-                try:
-                    # XML format for font can be set in the value
-                    value = ElementTree.fromstring(cell.get('value')).text
-                except ElementTree.ParseError:
-                    value = cell.get('value')
-
-                # Take only captures with a correct number
-                if value in ("1", "2", "footer_text1", "footer_text2"):
-                    cell.set('value', value[-1])  # Keep ony index value
-                    texts.append(cell)
-                else:
-                    LOGGER.warning("Template text holder with text '%s' ignored", value)
-
-        return sorted(texts, key=lambda x: x.get('value'))
-
     def get(self, key, capture_number, orientation=pictures.PORTRAIT):
-        """Return the value of the 'key' info for the given caputures numbers.
+        """Return the value of the 'key' info for the given caputures numbers and orientation.
 
         :param key: key info to get
         :type key: str
@@ -258,7 +192,8 @@ class TemplateParser(object):
         """
         assert orientation in (pictures.PORTRAIT, pictures.LANDSCAPE)
         if orientation not in self.data:
-            raise TemplateParserError("No template for '{}' orientation".format(orientation))
+            raise TemplateParserError(
+                "No template for '{}' orientation".format(orientation))
         if capture_number not in self.data[orientation]:
             raise TemplateParserError(
                 "No template for '{}' captures (orientation={})".format(capture_number, orientation))
@@ -303,6 +238,16 @@ class TemplateParser(object):
         """
         return self.get('size', capture_number, orientation)
 
+    def get_rects(self, capture_number, orientation=pictures.PORTRAIT):
+        """Return the list of top-left coordinates and max size rectangle.
+
+        :param capture_number: number of captures to assemble
+        :type capture_number: int
+        :param orientation: 'portrait' or 'landscape'
+        :type orientation: str
+        """
+        return self.get('shapes', capture_number, orientation)
+
     def get_capture_rects(self, capture_number, orientation=pictures.PORTRAIT):
         """Return the list of top-left coordinates and max size rectangle.
 
@@ -311,7 +256,7 @@ class TemplateParser(object):
         :param orientation: 'portrait' or 'landscape'
         :type orientation: str
         """
-        return self.get('captures', capture_number, orientation)
+        return [shape for shape in self.get_rects(capture_number, orientation) if shape.type == TemplateShapeParser.TYPE_CAPTURE]
 
     def get_text_rects(self, capture_number, orientation=pictures.PORTRAIT):
         """Return the list of top-left coordinates and max size rectangle.
@@ -321,7 +266,82 @@ class TemplateParser(object):
         :param orientation: 'portrait' or 'landscape'
         :type orientation: str
         """
-        return self.get('texts', capture_number, orientation)
+        return [shape for shape in self.get_rects(capture_number, orientation) if shape.type == TemplateShapeParser.TYPE_TEXT]
+
+
+class TemplateShapeParser(object):
+
+    TYPE_CAPTURE = 'capture'
+    TYPE_TEXT = 'text'
+    TYPE_IMAGE = 'image'
+    TYPE_UNKNOWN = 'unknown'
+
+    def __init__(self, mxcell_node, dpi):
+        self.text = self.parse_text(mxcell_node)
+        self.style = self.parse_style(mxcell_node)
+        self.image = self.style.get('image')
+        self.rotation = -int(self.style.get('rotation', 0))
+        self.x, self.y, self.width, self.height = self.parse_geometry(mxcell_node, dpi)
+
+        # Define shape type
+        if mxcell_node.get('vertex') == "1" and mxcell_node.get('style').startswith('shape=image'):
+            self.type = self.TYPE_IMAGE
+        elif mxcell_node.get('vertex') == "1" and mxcell_node.get('style').startswith('text;'):
+            self.type = self.TYPE_TEXT
+        elif mxcell_node.get('vertex') == "1" and not mxcell_node.get('style').startswith('text;'):
+            self.type = self.TYPE_CAPTURE
+        else:
+            self.type = self.TYPE_UNKNOWN
+
+    def __repr__(self):
+        return f"Shape(text='{self.text}', type={self.type})"
+
+    def parse_text(self, mxcell_node):
+        """Extarct text.
+
+        :param mxcell_node: 'mxCell' node
+        :type mxcell_node: :py:class:`ElementTree.Element`
+        """
+        try:
+            # XML format for font/style can be set in the value
+            value = ElementTree.fromstring(str(mxcell_node.get('value'))).text
+        except ElementTree.ParseError:
+            value = mxcell_node.get('value') or ''
+        return value
+
+    def parse_style(self, mxcell_node):
+        """Extract style data.
+
+        :param mxcell_node: 'mxCell' node
+        :type mxcell_node: :py:class:`ElementTree.Element`
+        """
+        styledict = {'name': ''}
+        if 'style' in mxcell_node.attrib:
+            style = [p for p in mxcell_node.attrib['style'].split(';') if p.strip()]
+            if '=' not in style[0]:
+                styledict['name'] = style.pop(0)
+            for key_value in style:
+                key, value = key_value.split('=', 1)
+                styledict[key] = value
+        return styledict
+
+    def parse_geometry(self, mxcell_node, dpi=600):
+        """Extract geometry data.
+
+        :param mxcell_node: 'mxCell' node
+        :type mxcell_node: :py:class:`ElementTree.Element`
+        :param dpi: dot-per-inch
+        :type dpi: int
+        """
+        geometry = mxcell_node.find('mxGeometry')
+        if geometry is None:
+            x, y, width, height = 0, 0, 0, 0
+        else:
+            x = px(geometry.get('x', 0), dpi)
+            y = px(geometry.get('y', 0), dpi)
+            width = px(geometry.attrib.get('width', 0), dpi)
+            height = px(geometry.attrib.get('height', 0), dpi)
+        return x, y, width, height
 
 
 class TemplatePictureFactory(PilPictureFactory):
@@ -333,25 +353,10 @@ class TemplatePictureFactory(PilPictureFactory):
         super(TemplatePictureFactory, self).__init__(size[0], size[1], *images)
 
     def _iter_images_rects(self):
-        """Yield top-left coordinates and max size rectangle for each source image.
-
-        :return: (image_x, image_y, image_width, image_height, image_angle)
-        :rtype: tuple
-        """
-        for rect in self.template.get_capture_rects(len(self._images), self.orientation):
-            yield rect
+        raise NotImplementedError("Not applicable for template")
 
     def _iter_texts_rects(self, interline=None):
-        """Yield top-left coordinates and max size rectangle for each text.
-
-        :param interline: margin between each text line
-        :type interline: int
-
-        :return: (text_x, text_y, text_width, text_height, text_angle)
-        :rtype: tuple
-        """
-        for rect in self.template.get_text_rects(len(self._images), self.orientation):
-            yield rect
+        raise NotImplementedError("Not applicable for template")
 
     def _image_paste(self, image, dest_image, pos_x, pos_y, angle=None):
         """Paste an image onto an other one with the given rotation angle.
@@ -371,56 +376,66 @@ class TemplatePictureFactory(PilPictureFactory):
         if angle:
             image = image.rotate(angle, expand=True)
         dest_image.paste(image,
-                         (pos_x + (width - image.width)//2, pos_y + (height - image.height)//2),
+                         (pos_x + (width - image.width)//2,
+                          pos_y + (height - image.height)//2),
                          image if angle is not None else None)
 
     def _build_matrix(self, image):
-        """Draw the source images on the given image.
+        """Draw all shape in the order defined in the template.
 
         :param image: image to draw on
         :type image: :py:class:`PIL.Image`
         :return: drawn image
         :rtype: :py:class:`PIL.Image`
         """
-        for params in self._iter_images_rects():
-            pos_x, pos_y, max_w, max_h, rotation, index = params
-            if len(self._images) <= index:
-                continue  # No image available for this index
+        for shape in self.template.get_rects(len(self._images), self.orientation):
+            if shape.type == TemplateShapeParser.TYPE_CAPTURE:
+                index = int(shape.text) - 1
+                if len(self._images) <= index:
+                    continue  # No image available for this index
 
-            src_image = self._images[index]
-            src_image, width, height = self._image_resize_keep_ratio(src_image, max_w, max_h, self._crop)
-            rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
-            self._image_paste(src_image, rect, (max_w - width) // 2, (max_h - height) // 2)
-            self._image_paste(rect, image, pos_x, pos_y, rotation)
+                src_image = self._images[index]
+                src_image, width, height = self._image_resize_keep_ratio(src_image,
+                                                                         shape.width,
+                                                                         shape.height,
+                                                                         self._crop)
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                self._image_paste(src_image, rect, (shape.width - width) // 2, (shape.height - height) // 2)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
+
+            elif shape.type == TemplateShapeParser.TYPE_TEXT:
+                index = int(shape.text) - 1
+                if len(self._texts) <= index:
+                    continue  # No text available for this index
+
+                text, font_name, color, align = self._texts[index]
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                draw = ImageDraw.Draw(rect)
+                font = fonts.get_pil_font(text, font_name, shape.width, shape.height)
+                _, text_height = font.getsize(text)
+                (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
+
+                x = 0
+                if align == self.CENTER:
+                    x += (shape.width - text_width) // 2
+                elif align == self.RIGHT:
+                    x += (shape.width - text_width)
+
+                draw.text((x - offset_x // 2, (shape.height - text_height) // 2 - offset_y // 2), text, color, font=font)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
+
+            elif shape.type == TemplateShapeParser.TYPE_IMAGE:
+                data = base64.b64decode(shape.image.split(',', 1)[1])
+                src_image = Image.open(BytesIO(data))
+                src_image = src_image.resize((shape.width, shape.height))
+                rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
+                self._image_paste(src_image, rect, 0, 0)
+                self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
+
         return image
 
     def _build_texts(self, image):
-        """Draw texts on a PIL image.
-
-        :param image: image to draw on
-        :type image: :py:class:`PIL.Image`
-        """
-        for params in self._iter_texts_rects():
-            pos_x, pos_y, max_w, max_h, angle, index = params
-            if len(self._texts) <= index:
-                continue  # No text available for this index
-
-            text, font_name, color, align = self._texts[index]
-            rect = Image.new('RGBA', (max_w, max_h), (255, 0, 0, 0))
-            draw = ImageDraw.Draw(rect)
-            font = fonts.get_pil_font(text, font_name, max_w, max_h)
-            _, text_height = font.getsize(text)
-            (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
-
-            x = 0
-            if align == self.CENTER:
-                x += (max_w - text_width) // 2
-            elif align == self.RIGHT:
-                x += (max_w - text_width)
-
-            draw.text((x - offset_x // 2, (max_h - text_height) // 2 - offset_y // 2),
-                      text, color, font=font)
-            self._image_paste(rect, image, pos_x, pos_y, angle)
+        pass  # Texts are drawn with capture matrix to preserve order defined in template
 
     def _build_outlines(self, image):
         """Draw outlines for captures and texts which is useful to investigate
@@ -431,19 +446,12 @@ class TemplatePictureFactory(PilPictureFactory):
         """
         draw = ImageDraw.Draw(image)
         font = ImageFont.load_default()
-        for pos_x, pos_y, width, height, angle, index in self._iter_images_rects():
-            rect = Image.new('RGBA', (width, height), (255, 0, 0, 0))
+        for shape in self.template.get_rects(len(self._images), self.orientation):
+            rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
             draw = ImageDraw.Draw(rect)
-            draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-            draw.text((10, 10), str(index + 1), 'red', font)
-            self._image_paste(rect, image, pos_x, pos_y, angle)
-        if self._texts:
-            for pos_x, pos_y, width, height, angle, index in self._iter_texts_rects():
-                rect = Image.new('RGBA', (width, height), (0, 255, 0, 0))
-                draw = ImageDraw.Draw(rect)
-                draw.rectangle(((0, 0), (width - 1, height - 1)), outline='red')
-                draw.text((10, 10), str(index + 1), 'red', font)
-                self._image_paste(rect, image, pos_x, pos_y, angle)
+            draw.rectangle(((0, 0), (shape.width - 1, shape.height - 1)), outline='red')
+            draw.text((10, 10), shape.text, 'red', font)
+            self._image_paste(rect, image, shape.x, shape.y, shape.rotation)
 
 
 DEFAULT = """<?xml version="1.0" encoding="UTF-8"?>
