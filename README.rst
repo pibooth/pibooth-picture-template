@@ -60,8 +60,8 @@ Here below the new configuration options available in the `pibooth`_ configurati
 Picture rendering
 -----------------
 
-Only **captures**, **texts** and **images** position/size are rendered. It means that the following keys of the
-configuration are still used to render the final picture:
+Only **captures**, **texts** and **images** position/size are rendered. It means that, in addition to the template,
+the following configuration keys are still taken in account to render the final picture:
 
 * ``[PICTURE][footer_text1]``
 * ``[PICTURE][footer_text2]``
