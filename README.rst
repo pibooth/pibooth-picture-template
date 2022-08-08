@@ -7,10 +7,9 @@ pibooth-picture-template
 
 ``pibooth-picture-template`` is a plugin for the `pibooth`_ application.
 
-It permits to define the captures/texts positions and sizes using a template. The template file
+It permits to define the **captures/texts positions and sizes** using a template. The template file
 (XML based on `mxGraphModel definition <https://jgraph.github.io/mxgraph/docs/tutorial.html>`_)
-can be easily created/edited using the free online diagram software `Flowchart Maker`_.
-
+can be easily created/edited using the free online diagram software `Flowchart Maker`_. Note that 
 
 .. image:: https://github.com/pibooth/pibooth-picture-template/blob/master/docs/images/FlowchartMaker.png?raw=true
    :align: center
@@ -57,6 +56,20 @@ Here below the new configuration options available in the `pibooth`_ configurati
     template = picture_template.xml
 
 .. note:: Edit the configuration by running the command ``pibooth --config``.
+
+Picture rendering
+-----------------
+
+Only **captures**, **texts** and **images** position/size are rendered. It means that the following keys of the
+configuration are still used to render the final picture:
+
+* ``[PICTURE][footer_text1]``
+* ``[PICTURE][footer_text2]``
+* ``[PICTURE][text_colors]``
+* ``[PICTURE][text_fonts]``
+* ``[PICTURE][text_alignments]``
+* ``[PICTURE][overlays]``
+* ``[PICTURE][backgrounds]``
 
 Picture orientation
 -------------------
