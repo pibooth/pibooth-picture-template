@@ -102,15 +102,13 @@ class TemplateParser(object):
         for diagram in doc.iter('diagram'):
 
             if not list(diagram) and diagram.text.strip():  # Compressed
-                template = ElementTree.fromstring(
-                    self.inflate(diagram.text, True))
+                template = ElementTree.fromstring(self.inflate(diagram.text, True))
             else:
                 template = diagram.find('mxGraphModel')
 
             template.set('name', diagram.get('name'))
             dpi = int(template[0][0].get('dpi', 600))
-            size = (px(template.attrib['pageWidth'], dpi), px(
-                template.attrib['pageHeight'], dpi))
+            size = (px(template.attrib['pageWidth'], dpi), px(template.attrib['pageHeight'], dpi))
             orientation = pictures.PORTRAIT if size[0] < size[1] else pictures.LANDSCAPE
 
             shapes = []
@@ -151,8 +149,7 @@ class TemplateParser(object):
                     shape.y = shape.y % size[1]
 
             # Create template parameters dictionary
-            subdata = data.setdefault(orientation, {}).setdefault(
-                len(distinct_capture_count), {})
+            subdata = data.setdefault(orientation, {}).setdefault(len(distinct_capture_count), {})
             if subdata:
                 raise TemplateParserError(
                     "Several templates with {} captures are defined".format(len(distinct_capture_count)))
@@ -161,12 +158,9 @@ class TemplateParser(object):
             subdata['orientation'] = orientation
 
             # Calculate the orientation majority for this template
-            captures = [shape for shape in shapes if shape.type ==
-                        TemplateShapeParser.TYPE_CAPTURE]
-            texts = [shape for shape in shapes if shape.type ==
-                     TemplateShapeParser.TYPE_TEXT]
-            portraits = [
-                shape for shape in shapes if shape.width < shape.height]
+            captures = [shape for shape in shapes if shape.type == TemplateShapeParser.TYPE_CAPTURE]
+            texts = [shape for shape in shapes if shape.type == TemplateShapeParser.TYPE_TEXT]
+            portraits = [shape for shape in captures if shape.width < shape.height]
             if len(portraits) * 1.0 / len(captures) >= 0.5:
                 subdata['captures_orientation'] = pictures.PORTRAIT
             else:
@@ -176,8 +170,7 @@ class TemplateParser(object):
                         len(captures), len(texts), len(shapes) - (len(captures) + len(texts)))
 
         if not data:
-            raise TemplateParserError(
-                "No template found in '{}'".format(self.filename))
+            raise TemplateParserError("No template found in '{}'".format(self.filename))
         return data
 
     def get(self, key, capture_number, orientation=pictures.PORTRAIT):
@@ -192,11 +185,9 @@ class TemplateParser(object):
         """
         assert orientation in (pictures.PORTRAIT, pictures.LANDSCAPE)
         if orientation not in self.data:
-            raise TemplateParserError(
-                "No template for '{}' orientation".format(orientation))
+            raise TemplateParserError("No template for '{}' orientation".format(orientation))
         if capture_number not in self.data[orientation]:
-            raise TemplateParserError(
-                "No template for '{}' captures (orientation={})".format(capture_number, orientation))
+            raise TemplateParserError("No template for '{}' captures (orientation={})".format(capture_number, orientation))
         return self.data[orientation][capture_number][key]
 
     def get_best_orientation(self, captures):
