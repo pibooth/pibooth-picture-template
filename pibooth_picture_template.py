@@ -403,7 +403,7 @@ class TemplatePictureFactory(PilPictureFactory):
                 rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
                 draw = ImageDraw.Draw(rect)
                 font = fonts.get_pil_font(text, font_name, shape.width, shape.height)
-                _, text_height = font.getsize(text)
+                text_height = font.getbbox(text)[3]
                 (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
 
                 x = 0
