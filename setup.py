@@ -26,10 +26,10 @@ def main():
             'Intended Audience :: End Users/Desktop',
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
             'Operating System :: POSIX :: Linux',
-            'Programming Language :: Python :: 3.6',
-            'Programming Language :: Python :: 3.7',
-            'Programming Language :: Python :: 3.8',
-            'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: 3.11',
+            'Programming Language :: Python :: 3.12',
+            'Programming Language :: Python :: 3.13',
             'Natural Language :: English',
             'Topic :: Multimedia :: Graphics :: Capture :: Digital Camera',
         ],
@@ -44,7 +44,7 @@ def main():
             'photobooth'
         ],
         py_modules=['pibooth_picture_template'],
-        python_requires=">=3.6",
+        python_requires=">=3.10",
         install_requires=[
             'pibooth>=2.0.0,<3',
         ],
