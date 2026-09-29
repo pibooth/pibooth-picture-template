@@ -1,5 +1,6 @@
-# This workflows will upload a Python Package using Twine when a release is created
-# For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+# This workflows will upload a Python Package to PyPI when a release is created
+# Publishing uses PyPI trusted publishing (OIDC), no API token is needed:
+# https://docs.pypi.org/trusted-publishers/
 
 name: PyPI publish on tag created
 
@@ -8,32 +9,56 @@ on:
     types: [created]
 
 jobs:
-  deploy:
+  build:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.x'
+        python-version: '3.11'
 
     - name: Install build dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install build twine
 
     - name: Install pibooth
       run: |
-        sudo apt-get install libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsmpeg-dev libportmidi-dev libsdl1.2-dev
         pip install pibooth
 
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    - name: Build
       run: |
-        python setup.py sdist bdist_wheel
-        twine check dist/* && twine upload --skip-existing dist/*
+        python -m build --no-isolation
+        twine check dist/*
+
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish:
+
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pibooth-picture-template
+    permissions:
+      id-token: write  # Mandatory for trusted publishing
+
+    steps:
+    - name: Download the distribution packages
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true
