@@ -1,5 +1,6 @@
 # This workflows will upload a Python Package to PyPI when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
+# Publishing uses PyPI trusted publishing (OIDC), no API token is needed:
+# https://docs.pypi.org/trusted-publishers/
 
 name: PyPI publish on tag created
 
@@ -8,7 +9,7 @@ on:
     types: [created]
 
 jobs:
-  deploy:
+  build:
 
     runs-on: ubuntu-latest
 
@@ -34,8 +35,30 @@ jobs:
         python -m build --no-isolation
         twine check dist/*
 
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish:
+
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pibooth-picture-template
+    permissions:
+      id-token: write  # Mandatory for trusted publishing
+
+    steps:
+    - name: Download the distribution packages
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
     - name: Publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        password: ${{ secrets.PYPI_PASSWORD }}
         skip-existing: true
