@@ -403,8 +403,9 @@ class TemplatePictureFactory(PilPictureFactory):
                 rect = Image.new('RGBA', (shape.width, shape.height), (255, 0, 0, 0))
                 draw = ImageDraw.Draw(rect)
                 font = fonts.get_pil_font(text, font_name, shape.width, shape.height)
-                text_height = font.getbbox(text)[3]
-                (text_width, _baseline), (offset_x, offset_y) = font.font.getsize(text)
+                # Use the public API (font.font.getsize is private and may be removed)
+                offset_x, offset_y, right, text_height = font.getbbox(text)
+                text_width = right - offset_x
 
                 x = 0
                 if align == self.CENTER:

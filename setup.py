@@ -47,6 +47,7 @@ def main():
         python_requires=">=3.10",
         install_requires=[
             'pibooth>=2.0.0,<3',
+            'Pillow>=10.0.0',
         ],
         zip_safe=False,  # Don't install the lib as an .egg zipfile
         entry_points={'pibooth': ["pibooth_picture_template = pibooth_picture_template"]},
